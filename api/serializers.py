@@ -15,7 +15,7 @@ from rest_framework.response import Response
 class MealSerializer(serializers.ModelSerializer):
     class Meta:
         model = Meal
-        fields = ('id', 'title', 'desc')
+        fields = ('id', 'title', 'desc','no_of_ratings','avg_rating')
 
 class RatingSerializer(serializers.ModelSerializer):
     class Meta:

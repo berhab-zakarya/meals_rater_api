@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from api.models import Meal, Rating
 from api.serializers import MealSerializer, RatingSerializer
-
+from django.contrib.auth.models import User
 class MealViewSet(viewsets.ModelViewSet):
     queryset = Meal.objects.all()
     serializer_class = MealSerializer
@@ -15,15 +15,31 @@ class MealViewSet(viewsets.ModelViewSet):
             '''
             create or update
             '''
+            message = None
             meal = Meal.objects.get(id=pk)
             stars = request.data['stars']
-            user = request.user
+            username = request.data['username']
+            user = User.objects.get(username=username)
+            status_code = None
+            serializer = None
             try:
-                rate  = Rating.objects.get(meal=meal,user=user.id)
-                pass
+                message = 'Updated'
+                rate = Rating.objects.get(meal=meal,user=user)
+                rate.stars = stars
+                rate.save()
+                serializer = RatingSerializer(rate,many=False)
+                status_code = status.HTTP_200_OK
             except:
-                pass
-            
+                message = 'Created'
+                rate = Rating.objects.create(stars=stars,user=user,meal=meal)
+                rate.save()
+                serializer = RatingSerializer(rate,many=False)
+                status_code = status.HTTP_200_OK
+            json = {
+                    'message': 'Meal Rate '+message,
+                    'result': serializer.data
+                }
+            return Response(json,status=status_code)
         else:    
             json = {
                 'message' : 'stars not provided'
